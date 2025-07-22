@@ -43,7 +43,7 @@
       <a href="#" class="back" @click.prevent="goBack">back</a>
     </div>
 
-    <div class="cursor" :style="{ left: cursorX + 'px', top: cursorY + 'px' }" />
+    <div class="cursor" :style="{ left: cursorX + 'px', top: cursorY + 'px' }"/>
   </div>
 </template>
 
@@ -52,6 +52,7 @@ export default {
   data() {
     return {
       glitch: false,
+      crtTransitioning: false,
       fadeOut: false,
       activeSection: null,
       cursorX: 0,
@@ -151,18 +152,25 @@ export default {
           default:
             this.currentLanguage = 'arabic';
         }
+        this.crtTransitioning = true;
+        setTimeout(() => {
+          this.activeSection = section;
+          this.updateLanguage(section);
+          this.generateArtLines();
+          this.crtTransitioning = false;
+        }, 1200); // время анимации CRT
         this.generateArtLines();
         this.fadeOut = false;
       }, 800);
     },
     goBack() {
-      this.fadeOut = true;
+      this.crtTransitioning = true;
       setTimeout(() => {
         this.activeSection = null;
         this.currentLanguage = 'arabic';
         this.generateArtLines();
-        this.fadeOut = false;
-      }, 800);
+        this.crtTransitioning = false;
+      }, 1200);
     },
     generateArtLines() {
       this.renderedLines = [];
@@ -249,7 +257,7 @@ export default {
           boxShadow: `0 0 12px ${bgColor}`
         };
 
-        this.shapes.push({ style });
+        this.shapes.push({style});
       }
     }
   }
@@ -306,7 +314,7 @@ html, body {
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
   animation-direction: alternate;
-  filter: drop-shadow(0 0 4px rgba(255,255,255,0.6));
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.6));
   mix-blend-mode: screen;
   border-radius: 8px;
   box-shadow: 0 0 12px currentColor;
@@ -370,10 +378,9 @@ html, body {
   color: #fff;
   text-transform: lowercase;
   animation: fadeIn 1.5s ease;
-  text-shadow:
-      0 0 8px #fff,
-      0 0 20px #0f0,
-      0 0 30px #0f0;
+  text-shadow: 0 0 8px #fff,
+  0 0 20px #0f0,
+  0 0 30px #0f0;
 }
 
 .title.glitch {
@@ -455,19 +462,37 @@ html, body {
   border-radius: 50%;
   pointer-events: none;
   z-index: 9999;
-  box-shadow: 0 0 8px rgba(255,255,255,0.6);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
   transform: translate(-50%, -50%);
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 600px) {
-  .title { font-size: 2rem; }
-  .subtitle { font-size: 0.85rem; }
-  .nav ul { flex-wrap: wrap; gap: 1rem; }
-  .section-title { font-size: 1.4rem; }
+  .title {
+    font-size: 2rem;
+  }
+
+  .subtitle {
+    font-size: 0.85rem;
+  }
+
+  .nav ul {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .section-title {
+    font-size: 1.4rem;
+  }
 }
 </style>

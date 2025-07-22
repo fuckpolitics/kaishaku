@@ -6,7 +6,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/fuckpolitics.github.io/kaishaku/',
+  base: '/kaishaku/',
   plugins: [
     vue(),
     vueDevTools(),
