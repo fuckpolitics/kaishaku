@@ -1,4 +1,11 @@
 <template>
+  <div v-if="loading" class="intro-screen">
+    <div class="glyph-sequence">
+    <span v-for="(glyph, index) in introGlyphs" :key="index" class="glyph" :style="{ animationDelay: `${index * 0.15}s` }">
+      {{ glyph }}
+    </span>
+    </div>
+  </div>
   <div class="app" :class="{ fading: fadeOut, crt: activeSection }">
     <!-- Яркий артхаусный геометрический фон -->
     <div class="geo-bg">
@@ -74,8 +81,8 @@
       <div v-else>
         <h2 class="section-title">{{ activeSection }}</h2>
         <p class="section-text">[content of {{ activeSection }} will go here]</p>
-        <a href="#" class="back" @click.prevent="goBack">back</a>
       </div>
+      <a href="#" class="back" @click.prevent="goBack">back</a>
     </div>
 
 <!--    <div class="cursor" :style="{ left: cursorX + 'px', top: cursorY + 'px' }"/>-->
@@ -86,6 +93,10 @@
 export default {
   data() {
     return {
+      loading: true,
+      introGlyphs: [
+        '𒀭', '𓂀', 'Ϟ', 'ᚱ', '𐌔', '߷', 'ᛉ', '҂', '𐎔', '𓊽', '☥', '𐎟', '𐤀', 'ᛏ', '⸸'
+      ],
       glitch: false,
       crtTransitioning: false,
       fadeOut: false,
@@ -159,11 +170,17 @@ export default {
   },
   mounted() {
     window.addEventListener('mousemove', this.updateCursor);
+    this.startIntro();
   },
   beforeDestroy() {
     window.removeEventListener('mousemove', this.updateCursor);
   },
   methods: {
+    startIntro() {
+      setTimeout(() => {
+        this.loading = false;
+      }, 4500);
+    },
     updateCursor(e) {
       this.cursorX = e.clientX;
       this.cursorY = e.clientY;
@@ -656,6 +673,67 @@ html, body {
   border: 2px solid #0f0;
   text-align: center;
   font-family: 'Courier New', monospace;
+}
+
+.intro-screen {
+  position: fixed;
+  inset: 0;
+  background-color: #000;
+  z-index: 99999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: screenFlash 0.8s ease-in-out infinite alternate;
+}
+
+.glyph-sequence {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 80vw;
+  justify-content: center;
+  font-size: 3rem;
+  font-family: 'Courier New', monospace;
+  color: #0f0;
+  text-shadow: 0 0 10px #0f0, 0 0 20px #0f0;
+}
+
+.glyph {
+  opacity: 0;
+  animation: glyphFade 0.6s ease forwards;
+  margin: 0.2rem;
+}
+
+@keyframes glyphFade {
+  to {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes screenFlash {
+  0% {
+    background-color: #000;
+  }
+  100% {
+    background-color: #020;
+  }
+}
+
+.intro-screen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: white;
+  opacity: 0;
+  animation: flashOut 4s ease forwards;
+  animation-delay: 3.8s;
+  pointer-events: none;
+}
+
+@keyframes flashOut {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 </style>
