@@ -8,27 +8,13 @@
     </div>
   </div>
   <div class="app" :class="{ fading: fadeOut, crt: activeSection }" style="margin: auto">
-    <!-- Яркий артхаусный геометрический фон -->
-    <div class="geo-bg">
-      <div
-          v-for="(shape, index) in shapes"
-          :key="index"
-          class="geo-shape"
-          :style="shape.style"
-      />
-    </div>
+    <GeoBg/>
 
-    <div class="art-bg">
-      <div
-          v-for="(line, i) in renderedLines"
-          :key="i"
-          class="art-line"
-          :class="{ 'no-flicker': currentLanguage !== 'arabic' }"
-          :style="artStyles[i]"
-      >
-        {{ line }}
-      </div>
-    </div>
+    <ArtBg
+        :currentLanguage="currentLanguage"
+        :languagePhrases="languagePhrases"
+        :totalArtLines="totalArtLines"
+    />
 
     <div v-if="!activeSection" class="content">
       <h1 class="title" @mouseenter="glitch = true" @animationend="glitch = false" :class="{ glitch }">
@@ -45,51 +31,26 @@
 
 
     <div v-else class="section">
-      <div v-if="activeSection === 'music'" class="music-section">
-        <div class="music-frame">
-          <div class="music-header">[ kaishaku.ninja music zone ]</div>
-
-          <div class="album-scroll">
-            <button class="scroll-btn" @click="scrollLeft">◀</button>
-
-            <div class="album-list" ref="albumList">
-              <div
-                  v-for="(album, index) in albums"
-                  :key="index"
-                  class="album"
-                  @click="openAlbum(album)"
-              >
-                <div class="album-cover">{{ album.cover }}</div>
-                <div class="album-title">{{ album.title }}</div>
-              </div>
-            </div>
-
-            <button class="scroll-btn" @click="scrollRight">▶</button>
-          </div>
-
-          <div class="music-footer">[ arrows to browse | click to open ]</div>
-        </div>
-
-        <div v-if="selectedAlbum" class="album-popup" @click="closeAlbum">
-          <div class="popup-content">
-            <h3>{{ selectedAlbum.title }}</h3>
-            <p>[placeholder info]</p>
-          </div>
-        </div>
-      </div>
+      <music v-if="activeSection === 'music'"/>
+      <respects v-else-if="activeSection === 'respects'"/>
       <div v-else>
         <h2 class="section-title">{{ activeSection }}</h2>
         <p class="section-text">[content of {{ activeSection }} will go here]</p>
       </div>
       <a href="#" class="back" @click.prevent="goBack">back</a>
     </div>
-    <div class="kaonashi" />
-    <!--    <div class="cursor" :style="{ left: cursorX + 'px', top: cursorY + 'px' }"/>-->
+    <div class="kaonashi"/>
   </div>
 </template>
 
 <script>
+import Respects from "@/components/Respects.vue";
+import Music from "@/components/Music.vue";
+import GeoBg from "@/components/GeoBg.vue";
+import ArtBg from "@/components/ArtBg.vue";
+
 export default {
+  components: {ArtBg, GeoBg, Music, Respects},
   data() {
     return {
       loading: true,
@@ -154,18 +115,10 @@ export default {
         ]
       },
       currentLanguage: 'arabic',
-      shapes: [],
-      totalShapes: 30,
-      albums: Array.from({length: 15}, (_, i) => ({
-        title: `Album ${i + 1}`,
-        cover: `[${i + 1}]`,
-      })),
-      selectedAlbum: null
     };
   },
   created() {
     this.generateArtLines();
-    this.generateShapes();
   },
   mounted() {
     window.addEventListener('mousemove', this.updateCursor);
@@ -280,52 +233,6 @@ export default {
         textShadow: `0 0 8px rgba(255, 255, 255, ${opacity + 0.4})`
       };
     },
-    generateShapes() {
-      this.shapes = [];
-      for (let i = 0; i < this.totalShapes; i++) {
-        const width = 20 + Math.random() * 100; // больше
-        const height = 10 + Math.random() * 60;
-        const top = Math.random() * 100;
-        const left = Math.random() * 100;
-        const opacity = 0.15 + Math.random() * 0.3; // ярче фигуры
-        const bgColors = ['#0f0', '#0ff', '#ff0', '#f0f'];
-        const bgColor = bgColors[Math.floor(Math.random() * bgColors.length)];
-        const duration = 15 + Math.random() * 25;
-
-        const shapeType = Math.random() > 0.5 ? 'rect' : 'line';
-
-        let style = {
-          width: shapeType === 'rect' ? `${width}px` : `${width / 5}px`,
-          height: shapeType === 'rect' ? `${height}px` : '3px',
-          top: `${top}vh`,
-          left: `${left}vw`,
-          opacity,
-          backgroundColor: bgColor,
-          animationDuration: `${duration}s`,
-          animationTimingFunction: 'ease-in-out',
-          animationIterationCount: 'infinite',
-          animationDirection: 'alternate',
-          borderRadius: shapeType === 'rect' ? '8px' : '0',
-          position: 'absolute',
-          filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.6))',
-          mixBlendMode: 'screen',
-          boxShadow: `0 0 12px ${bgColor}`
-        };
-        this.shapes.push({style});
-      }
-    },
-    scrollLeft() {
-      this.$refs.albumList.scrollLeft -= 150;
-    },
-    scrollRight() {
-      this.$refs.albumList.scrollLeft += 150;
-    },
-    openAlbum(album) {
-      this.selectedAlbum = album;
-    },
-    closeAlbum() {
-      this.selectedAlbum = null;
-    }
   }
 };
 </script>
@@ -372,38 +279,6 @@ html, body {
 .app.crt {
   background: #000;
   position: relative;
-}
-
-.geo-bg {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.geo-shape {
-  position: absolute;
-  animation-name: geoMove;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-  animation-direction: alternate;
-  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.6));
-  mix-blend-mode: screen;
-  border-radius: 8px;
-  box-shadow: 0 0 12px currentColor;
-}
-
-@keyframes geoMove {
-  0% {
-    transform: translateY(0) translateX(0) scale(1);
-  }
-  50% {
-    transform: translateY(-20px) translateX(20px) scale(1.1);
-  }
-  100% {
-    transform: translateY(0) translateX(0) scale(1);
-  }
 }
 
 .art-bg {
@@ -558,119 +433,6 @@ html, body {
     justify-content: center;
     padding: 0 2rem;
   }
-}
-
-.music-section {
-  z-index: 20;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  color: #0f0;
-  text-shadow: 0 0 3px #0f0;
-  font-family: 'Visitor', monospace;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-
-.music-frame {
-  width: 90%;
-  max-width: 800px;
-  border: 2px solid #0f0;
-  padding: 1rem;
-  background-color: #000;
-  overflow: visible;
-  position: relative;
-}
-
-.music-header,
-.music-footer {
-  text-align: center;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-  border-bottom: 1px dashed #0f0;
-  padding-bottom: 0.5rem;
-}
-
-.album-scroll {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-}
-
-.album-list {
-  display: flex;
-  gap: 1rem;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  padding: 0.5rem;
-  scroll-behavior: smooth;
-  max-width: 80%;
-}
-
-.album-list::-webkit-scrollbar {
-  display: none;
-}
-
-.album {
-  flex: 0 0 auto;
-  width: 100px;
-  height: 120px;
-  background-color: #111;
-  border: 1px solid #0f0;
-  text-align: center;
-  cursor: pointer;
-  padding: 0.5rem;
-}
-
-.album-cover {
-  height: 60px;
-  background: #0f0;
-  margin-bottom: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-}
-
-.album-title {
-  font-size: 0.75rem;
-}
-
-.scroll-btn {
-  background-color: #000;
-  color: #0f0;
-  border: 1px solid #0f0;
-  font-size: 1.2rem;
-  width: 2rem;
-  height: 2rem;
-  cursor: pointer;
-}
-
-.album-popup {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.85);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #0f0;
-  z-index: 9999;
-  pointer-events: auto;
-}
-
-.popup-content {
-  background: #000;
-  padding: 2rem;
-  border: 2px solid #0f0;
-  text-align: center;
-  font-family: 'Visitor', monospace;
 }
 
 .intro-screen {
