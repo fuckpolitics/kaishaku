@@ -1,12 +1,13 @@
 <template>
   <div v-if="loading" class="intro-screen">
     <div class="glyph-sequence">
-    <span v-for="(glyph, index) in introGlyphs" :key="index" class="glyph" :style="{ animationDelay: `${index * 0.15}s` }">
+    <span v-for="(glyph, index) in introGlyphs" :key="index" class="glyph"
+          :style="{ animationDelay: `${index * 0.15}s` }">
       {{ glyph }}
     </span>
     </div>
   </div>
-  <div class="app" :class="{ fading: fadeOut, crt: activeSection }">
+  <div class="app" :class="{ fading: fadeOut, crt: activeSection }" style="margin: auto">
     <!-- Яркий артхаусный геометрический фон -->
     <div class="geo-bg">
       <div
@@ -33,8 +34,6 @@
       <h1 class="title" @mouseenter="glitch = true" @animationend="glitch = false" :class="{ glitch }">
         kaishaku.ninja
       </h1>
-      <p class="subtitle">fragmented presence in digital shadows</p>
-
       <nav class="nav">
         <ul>
           <li v-for="section in sections" :key="section">
@@ -84,8 +83,8 @@
       </div>
       <a href="#" class="back" @click.prevent="goBack">back</a>
     </div>
-
-<!--    <div class="cursor" :style="{ left: cursorX + 'px', top: cursorY + 'px' }"/>-->
+    <div class="kaonashi" />
+    <!--    <div class="cursor" :style="{ left: cursorX + 'px', top: cursorY + 'px' }"/>-->
   </div>
 </template>
 
@@ -211,10 +210,10 @@ export default {
         this.crtTransitioning = true;
         setTimeout(() => {
           this.activeSection = section;
-          this.updateLanguage(section);
-          this.generateArtLines();
+          // this.updateLanguage(section);
+          // this.generateArtLines();
           this.crtTransitioning = false;
-        }, 1200); // время анимации CRT
+        }, 1200);
         this.generateArtLines();
         this.fadeOut = false;
       }, 800);
@@ -244,7 +243,7 @@ export default {
       const left = Math.random() * 100;
       const rotation = (Math.random() - 0.5) * 60;
       const size = 1.5 + Math.random() * 3;
-      const opacity = 0.25 + Math.random() * 0.35; // ярче
+      const opacity = 0.125 + Math.random() * 0.175; // ярче
       const duration = 30 + Math.random() * 50;
 
       let fontFamily = '';
@@ -334,17 +333,26 @@ export default {
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Scheherazade:wght@400;700&display=swap');
 
+@font-face {
+  font-family: 'Visitor';
+  src: url('@/assets/fonts/visitor2.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 html, body {
   margin: 0;
   padding: 0;
   background: #000;
-  font-family: 'Courier New', monospace;
+  font-family: 'Visitor', monospace;
   height: 100%;
   overflow: hidden;
+  //display: grid;
   //cursor: none;
 }
 
 .app {
+  justify-self: auto;
   width: 100%;
   height: 100vh;
   background: #000;
@@ -369,7 +377,7 @@ html, body {
 .geo-bg {
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: 1;
   pointer-events: none;
   overflow: hidden;
 }
@@ -453,13 +461,6 @@ html, body {
   animation: glitch 0.6s steps(2, end);
 }
 
-.subtitle {
-  font-size: 1rem;
-  color: #ccc;
-  margin-top: 0.5rem;
-  text-shadow: 0 0 4px #0f0;
-}
-
 .nav ul {
   display: flex;
   gap: 2rem;
@@ -475,10 +476,9 @@ html, body {
   text-decoration: none;
   font-size: 0.95rem;
   transition: all 0.3s ease;
-  text-shadow:
-      0 0 2px #0f0,
-      0 0 4px #0f0,
-      0 0 6px #0f0;
+  text-shadow: 0 0 2px #0f0,
+  0 0 4px #0f0,
+  0 0 6px #0f0;
   letter-spacing: 0.05em;
   position: relative;
 }
@@ -526,18 +526,6 @@ html, body {
   background: rgba(0, 255, 0, 0.1);
 }
 
-.cursor {
-  position: fixed;
-  width: 6px;
-  height: 6px;
-  background-color: #ccc;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 9999;
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
-  transform: translate(-50%, -50%);
-}
-
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -554,10 +542,6 @@ html, body {
     font-size: 2rem;
   }
 
-  .subtitle {
-    font-size: 0.85rem;
-  }
-
   .nav ul {
     flex-wrap: wrap;
     gap: 1rem;
@@ -565,6 +549,14 @@ html, body {
 
   .section-title {
     font-size: 1.4rem;
+  }
+}
+
+@media {
+  #app {
+    display: flex;
+    justify-content: center;
+    padding: 0 2rem;
   }
 }
 
@@ -576,7 +568,7 @@ html, body {
   flex-direction: column;
   color: #0f0;
   text-shadow: 0 0 3px #0f0;
-  font-family: 'Courier New', monospace;
+  font-family: 'Visitor', monospace;
   width: 100%;
   height: 100%;
   overflow: visible;
@@ -678,7 +670,7 @@ html, body {
   padding: 2rem;
   border: 2px solid #0f0;
   text-align: center;
-  font-family: 'Courier New', monospace;
+  font-family: 'Visitor', monospace;
 }
 
 .intro-screen {
@@ -698,7 +690,7 @@ html, body {
   max-width: 80vw;
   justify-content: center;
   font-size: 3rem;
-  font-family: 'Courier New', monospace;
+  font-family: 'Visitor', monospace;
   color: #0f0;
   text-shadow: 0 0 10px #0f0, 0 0 20px #0f0;
 }
@@ -737,9 +729,46 @@ html, body {
 }
 
 @keyframes flashOut {
-  0% { opacity: 0; }
-  10% { opacity: 1; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
+.kaonashi {
+  position: fixed;
+  bottom: 0;
+  right: 2vw;
+  width: 360px;
+  aspect-ratio: 2 / 3; /* Примерно как у Каонаси */
+  background-image: url('./assets/img/no-face.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.4;
+  pointer-events: none;
+  animation: floaty 6s ease-in-out infinite;
+  z-index: 0;
+  filter: grayscale(1) contrast(1.2);
+}
+
+@keyframes floaty {
+  0% {
+    transform: translateY(0px) scale(1);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(-10px) scale(1.03);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(0px) scale(1);
+    opacity: 0.4;
+  }
+}
 </style>
