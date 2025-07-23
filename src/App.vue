@@ -78,7 +78,7 @@
       </div>
     </div>
 
-    <div class="cursor" :style="{ left: cursorX + 'px', top: cursorY + 'px' }"/>
+<!--    <div class="cursor" :style="{ left: cursorX + 'px', top: cursorY + 'px' }"/>-->
   </div>
 </template>
 
@@ -324,7 +324,7 @@ html, body {
   font-family: 'Courier New', monospace;
   height: 100%;
   overflow: hidden;
-  cursor: none;
+  //cursor: none;
 }
 
 .app {
