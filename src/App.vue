@@ -470,11 +470,17 @@ html, body {
 }
 
 .nav a {
-  color: #aaa;
+  color: #e0ffe0;
   text-transform: lowercase;
   text-decoration: none;
-  font-size: 0.85rem;
-  transition: color 0.3s ease;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  text-shadow:
+      0 0 2px #0f0,
+      0 0 4px #0f0,
+      0 0 6px #0f0;
+  letter-spacing: 0.05em;
+  position: relative;
 }
 
 .nav a:hover {
