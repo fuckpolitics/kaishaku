@@ -1,34 +1,35 @@
 <template>
   <div v-if="loading" class="intro-screen">
     <div class="glyph-sequence">
-    <span v-for="(glyph, index) in introGlyphs" :key="index" class="glyph"
-          :style="{ animationDelay: `${index * 0.15}s` }">
-      {{ glyph }}
-    </span>
+      <span v-for="(glyph, index) in introGlyphs" :key="index" class="glyph"
+            :style="{ animationDelay: `${index * 0.15}s` }">
+        {{ glyph }}
+      </span>
     </div>
   </div>
-  <div class="app" :class="{ fading: fadeOut, crt: activeSection }" style="margin: auto">
+  <div class="app" :class="{ fading: fadeOut, crt: activeSection }">
     <GeoBg/>
 
     <ArtBg
         :currentLanguage="currentLanguage"
         :languagePhrases="languagePhrases"
         :totalArtLines="totalArtLines"
+        :tiltX="tiltX"
+        :tiltY="tiltY"
     />
 
-    <div v-if="!activeSection" class="content">
-      <h1 class="title" @mouseenter="glitch = true" @animationend="glitch = false" :class="{ glitch }">
-        kaishaku.ninja
-      </h1>
-      <nav class="nav">
-        <ul>
-          <li v-for="section in sections" :key="section">
-            <a href="#" @click.prevent="goTo(section)">{{ section }}</a>
-          </li>
-        </ul>
-      </nav>
+    <div v-if="!activeSection" class="page-container">
+      <div class="content">
+        <h1 class="title" @mouseenter="glitch = true" @animationend="glitch = false" :class="{ glitch }">
+          kaishaku.ninja
+        </h1>
+        <sigil-nav 
+          :sections="sections" 
+          :active-section="activeSection"
+          @navigate="goTo"
+        />
+      </div>
     </div>
-
 
     <div v-else class="section">
       <music v-if="activeSection === 'music'"/>
@@ -39,7 +40,7 @@
       </div>
       <a href="#" class="back" @click.prevent="goBack">back</a>
     </div>
-    <div class="kaonashi"/>
+    <div class="kaonashi" :style="kaonashiStyle"/>
   </div>
 </template>
 
@@ -48,9 +49,10 @@ import Respects from "@/components/Respects.vue";
 import Music from "@/components/Music.vue";
 import GeoBg from "@/components/GeoBg.vue";
 import ArtBg from "@/components/ArtBg.vue";
+import SigilNav from "@/components/SigilNav.vue";
 
 export default {
-  components: {ArtBg, GeoBg, Music, Respects},
+  components: { ArtBg, GeoBg, Music, Respects, SigilNav },
   data() {
     return {
       loading: true,
@@ -63,6 +65,8 @@ export default {
       activeSection: null,
       cursorX: 0,
       cursorY: 0,
+      tiltX: 0,
+      tiltY: 0,
       sections: ['music', 'software', 'portfolio', 'thoughts', 'respects'],
       artStyles: [],
       renderedLines: [],
@@ -122,10 +126,12 @@ export default {
   },
   mounted() {
     window.addEventListener('mousemove', this.updateCursor);
+    window.addEventListener('deviceorientation', this.handleTilt);
     this.startIntro();
   },
   beforeDestroy() {
     window.removeEventListener('mousemove', this.updateCursor);
+    window.removeEventListener('deviceorientation', this.handleTilt);
   },
   methods: {
     startIntro() {
@@ -136,6 +142,11 @@ export default {
     updateCursor(e) {
       this.cursorX = e.clientX;
       this.cursorY = e.clientY;
+    },
+    handleTilt(event) {
+      const { beta, gamma } = event;
+      this.tiltX = (gamma / 45) * 10; // максимум ±10
+      this.tiltY = (beta / 45) * 10;
     },
     goTo(section) {
       this.fadeOut = true;
@@ -163,8 +174,6 @@ export default {
         this.crtTransitioning = true;
         setTimeout(() => {
           this.activeSection = section;
-          // this.updateLanguage(section);
-          // this.generateArtLines();
           this.crtTransitioning = false;
         }, 1200);
         this.generateArtLines();
@@ -196,7 +205,7 @@ export default {
       const left = Math.random() * 100;
       const rotation = (Math.random() - 0.5) * 60;
       const size = 1.5 + Math.random() * 3;
-      const opacity = 0.125 + Math.random() * 0.175; // ярче
+      const opacity = 0.125 + Math.random() * 0.175;
       const duration = 30 + Math.random() * 50;
 
       let fontFamily = '';
@@ -229,10 +238,17 @@ export default {
         animationDuration: `${duration}s`,
         fontFamily,
         writingMode: this.currentLanguage === 'mongolian' ? 'vertical-rl' : 'horizontal-tb',
-        color: `rgba(255, 255, 255, ${opacity + 0.2})`, // белый текст с прозрачностью
+        color: `rgba(255, 255, 255, ${opacity + 0.2})`,
         textShadow: `0 0 8px rgba(255, 255, 255, ${opacity + 0.4})`
       };
     },
+  },
+  computed: {
+    kaonashiStyle() {
+      return {
+        transform: `translate(${this.tiltX * 0.5}px, ${this.tiltY * 0.5}px)`
+      };
+    }
   }
 };
 </script>
@@ -252,22 +268,32 @@ html, body {
   padding: 0;
   background: #000;
   font-family: 'Visitor', monospace;
-  height: 100%;
-  overflow: hidden;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
   //display: grid;
   //cursor: none;
 }
 
 .app {
-  justify-self: auto;
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
   background: #000;
   position: relative;
+  transition: background 0.8s ease;
+  overflow: hidden;
+}
+
+.page-container {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  transition: background 0.8s ease;
+  padding: 2rem;
+  box-sizing: border-box;
+  z-index: 2;
 }
 
 .app.fading {
@@ -318,8 +344,16 @@ html, body {
 }
 
 .content {
-  z-index: 10;
   text-align: center;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
 }
 
 .title {
@@ -492,16 +526,6 @@ html, body {
 
 @keyframes flashOut {
   0% {
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
 .kaonashi {
   position: fixed;
   bottom: 0;
@@ -513,7 +537,6 @@ html, body {
   background-repeat: no-repeat;
   background-position: center;
   opacity: 0.4;
-  pointer-events: none;
   animation: floaty 6s ease-in-out infinite;
   z-index: 0;
   filter: grayscale(1) contrast(1.2);
@@ -533,4 +556,15 @@ html, body {
     opacity: 0.4;
   }
 }
+
+
+.art-line {
+  transition: transform 0.2s ease-out;
+}
+
+.kaonashi {
+  transition: transform 0.3s ease-out;
+}}}
+
 </style>
+
